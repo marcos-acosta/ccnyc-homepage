@@ -1,11 +1,79 @@
 ---
-import Welcome from '../components/Welcome.astro';
-import Layout from '../layouts/Layout.astro';
-
-// Welcome to Astro! Wondering what to do next? Check out the Astro documentation at https://docs.astro.build
-// Don't want to use any of this? Delete everything in this file, the `assets`, `components`, and `layouts` directories, and start fresh.
+import { Image } from "astro:assets";
+import Layout from "../layouts/Layout.astro";
+import instagramIcon from "./../assets/instagram-white-icon.png";
 ---
 
 <Layout>
-	<Welcome />
+  <div class="centeredContainer">
+    <div class="titleContainer">
+      <div class="ccnycTitle">CCNYC</div>
+      <div class="ccnycSubtitle">creative coding nyc</div>
+    </div>
+    <div class="missionStatement">
+      <div class="missionStatementTitle">Mission statement</div>
+      Mission statement TKTK. Lorem ipsum dolor sit amet, consectetur adipiscing
+      elit. Donec sagittis maximus consectetur. Duis tincidunt leo eget sapien fringilla
+      condimentum. Cras mattis ex vitae nibh sodales aliquet. Proin lorem dolor,
+      lobortis ut ullamcorper vitae, maximus quis magna. Maecenas lacus nulla, egestas
+      in mattis a, iaculis quis arcu. Vestibulum nibh arcu, elementum ut risus id,
+      cursus aliquet mi. Pellentesque vitae mollis leo. Etiam at urna venenatis,
+      tristique odio non, tincidunt quam.
+    </div>
+    <div class="socialsContainer">
+      <a
+        href="https://www.instagram.com/creativecodingnyc/"
+        target="_blank"
+        rel="noreferrer"
+      >
+        <Image src={instagramIcon} alt="Instagram icon" class="instaIcon" />
+      </a>
+    </div>
+  </div>
 </Layout>
+
+<style>
+  .centeredContainer {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+  }
+
+  .titleContainer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 30px;
+  }
+
+  .ccnycTitle {
+    font-size: 3rem;
+    margin-bottom: 10px;
+  }
+
+  .ccnycSubtitle {
+    font-style: italic;
+  }
+
+  .missionStatement {
+    width: clamp(300px, 60%, 800px);
+  }
+
+  .missionStatementTitle {
+    text-transform: uppercase;
+    color: var(--theme-gray);
+    margin-bottom: 8px;
+  }
+
+  .socialsContainer {
+    margin-top: 50px;
+  }
+
+  .instaIcon {
+    width: 40px;
+    height: unset;
+  }
+</style>
