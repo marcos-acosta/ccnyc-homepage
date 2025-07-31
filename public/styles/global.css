@@ -9,3 +9,9 @@
     src: url("/fonts/Karla-Italic-VariableFont_wght.ttf") format("truetype");
     font-style: italic;
 }
+
+@font-face {
+    font-family: "Tanker";
+    src: url("/fonts/Tanker-Regular.otf") format("opentype");
+    font-style: normal;
+}
