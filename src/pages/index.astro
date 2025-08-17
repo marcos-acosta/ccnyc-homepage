@@ -12,68 +12,83 @@ import instagramIcon from "./../assets/instagram-white-icon.png";
     </div>
     <div class="missionStatement">
       <div class="missionStatementTitle">Mission statement</div>
-      Mission statement TKTK. Lorem ipsum dolor sit amet, consectetur adipiscing
-      elit. Donec sagittis maximus consectetur. Duis tincidunt leo eget sapien fringilla
-      condimentum. Cras mattis ex vitae nibh sodales aliquet. Proin lorem dolor,
-      lobortis ut ullamcorper vitae, maximus quis magna. Maecenas lacus nulla, egestas
-      in mattis a, iaculis quis arcu. Vestibulum nibh arcu, elementum ut risus id,
-      cursus aliquet mi. Pellentesque vitae mollis leo. Etiam at urna venenatis,
-      tristique odio non, tincidunt quam.
-    </div>
-    <div class="socialsContainer">
-      <a
-        href="https://www.instagram.com/creativecodingnyc/"
-        target="_blank"
-        rel="noreferrer"
-      >
-        <Image src={instagramIcon} alt="Instagram icon" class="instaIcon" />
-      </a>
+      <p>
+        Creative Coding NYC is a weekly community meetup for anyone interested
+        in bringing their creative ideas to life with code. Everyone is welcome!
+        People from all programming backgrounds come to our meetups, from
+        complete beginners to veteran programmers. Our top priority is to foster
+        an inclusive, welcoming environment where creative coders can support
+        each other and learn from one another.
+      </p><p>
+        Our gatherings are a space to:
+        <ul>
+          <li>Work on individual projects or collaborate with others</li>
+          <li>Get creative or technical feedback</li>
+          <li>Have discussions on creative coding</li>
+          <li>Share resources, other artists' work, ideas, etc.</li>
+          <li>Learn independently or with others</li>
+          <li>
+            Build relationships with others in the creative coding community :)
+          </li>
+        </ul>
+      </p>
+      <div class="socialsContainer">
+        <a
+          href="https://www.instagram.com/creativecodingnyc/"
+          target="_blank"
+          rel="noreferrer"
+        >
+          <Image src={instagramIcon} alt="Instagram icon" class="instaIcon" />
+        </a>
+      </div>
     </div>
   </div>
+
+  <style>
+    .centeredContainer {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+    }
+
+    .titleContainer {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-bottom: 30px;
+    }
+
+    .ccnycTitle {
+      font-size: 4.5rem;
+      font-family: "Tanker", monospace;
+    }
+
+    .ccnycSubtitle {
+      font-style: italic;
+    }
+
+    .missionStatement {
+      width: clamp(300px, 60%, 800px);
+    }
+
+    .missionStatementTitle {
+      text-transform: uppercase;
+      color: var(--theme-gray);
+      margin-bottom: 8px;
+    }
+
+    .socialsContainer {
+      margin-top: 50px;
+      display: flex;
+      justify-content: center;
+    }
+
+    .instaIcon {
+      width: 40px;
+      height: unset;
+    }
+  </style>
 </Layout>
-
-<style>
-  .centeredContainer {
-    width: 100%;
-    height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-direction: column;
-  }
-
-  .titleContainer {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    margin-bottom: 30px;
-  }
-
-  .ccnycTitle {
-    font-size: 4.5rem;
-    font-family: "Tanker", monospace;
-  }
-
-  .ccnycSubtitle {
-    font-style: italic;
-  }
-
-  .missionStatement {
-    width: clamp(300px, 60%, 800px);
-  }
-
-  .missionStatementTitle {
-    text-transform: uppercase;
-    color: var(--theme-gray);
-    margin-bottom: 8px;
-  }
-
-  .socialsContainer {
-    margin-top: 50px;
-  }
-
-  .instaIcon {
-    width: 40px;
-    height: unset;
-  }
-</style>
