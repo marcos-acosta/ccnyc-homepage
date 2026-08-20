@@ -8,7 +8,9 @@ import instagramIcon from "./../assets/instagram-white-icon.png";
 
 // Example: a tab named "Events" whose first row is the header.
 // Swap the range (and the columns below) for whatever the real sheet holds.
-const events = sheetRowsToEvents(await fetchSheetRows({ range: "'Poster Signups'!A2:L" }));
+const events = sheetRowsToEvents(
+  await fetchSheetRows({ range: "'Poster Signups'!A2:L" }),
+);
 ---
 
 <Layout>
@@ -19,15 +21,19 @@ const events = sheetRowsToEvents(await fetchSheetRows({ range: "'Poster Signups'
     </div>
     <div class="textContainer">
       <p>
-        Check <a href="https://calendar.google.com/calendar/u/0/newembed?src=af7c6ae752c79810e8eb38e75cdf47faed42d35a9a68372067572cad4a6ec400@group.calendar.google.com" target="_blank">our calendar</a> for our next meetup! We also announce meetups on our <a
+        Check our <a
           href="https://www.instagram.com/creativecodingnyc/"
           target="_blank"
           rel="noreferrer"
         >
           Instagram</a
-        > with digital posters made by CCNYCers!
+        > to see the digital posters our members have made for each meetup! You can
+        also see our upcoming meetups on our <a
+          href="https://calendar.google.com/calendar/u/0/newembed?src=af7c6ae752c79810e8eb38e75cdf47faed42d35a9a68372067572cad4a6ec400@group.calendar.google.com"
+          target="_blank">our calendar</a
+        >.
       </p>
-      <hr>
+      <hr />
       <p>
         Creative Coding NYC is a weekly community meetup for anyone interested
         in bringing their creative ideas to life using code. Everyone is
@@ -57,7 +63,7 @@ const events = sheetRowsToEvents(await fetchSheetRows({ range: "'Poster Signups'
           </>
         )
       }
-      <hr>
+      <hr />
       <div class="socialsContainer">
         <a
           href="https://www.instagram.com/creativecodingnyc/"
