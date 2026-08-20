@@ -1,7 +1,14 @@
 ---
 import { Image } from "astro:assets";
 import Layout from "../layouts/Layout.astro";
+import SheetTable from "../components/SheetTable.astro";
+import { fetchSheetRows } from "../lib/sheets";
+import { sheetRowsToEvents } from "../lib/preprocess";
 import instagramIcon from "./../assets/instagram-white-icon.png";
+
+// Example: a tab named "Events" whose first row is the header.
+// Swap the range (and the columns below) for whatever the real sheet holds.
+const events = sheetRowsToEvents(await fetchSheetRows({ range: "'Poster Signups'!A2:L" }));
 ---
 
 <Layout>
@@ -41,8 +48,15 @@ import instagramIcon from "./../assets/instagram-white-icon.png";
           </li>
         </ul>
       </p>
-      <p>
-      </p>
+      {
+        events.length > 0 && (
+          <>
+            <hr />
+            <h2 class="sectionTitle">Upcoming meetups</h2>
+            <SheetTable events={events} />
+          </>
+        )
+      }
       <hr>
       <div class="socialsContainer">
         <a
@@ -96,9 +110,11 @@ import instagramIcon from "./../assets/instagram-white-icon.png";
       width: clamp(300px, 60%, 800px);
     }
 
-    .missionStatementTitle {
+    .sectionTitle {
       text-transform: uppercase;
       color: var(--theme-gray);
+      font-size: 1rem;
+      font-weight: normal;
     }
 
     .socialsContainer {

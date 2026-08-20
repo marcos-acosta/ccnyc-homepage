@@ -1,0 +1,55 @@
+---
+import type { Event } from "../lib/preprocess";
+
+interface Props {
+  events: Event[];
+}
+
+const events = Astro.props.events.filter(e => new Date(e.date) > new Date()).slice(0, 20);
+---
+
+{
+  events.length > 0 && (
+    <table class="sheetTable">
+      <thead>
+        <tr>
+            <th>Date</th>
+            <th>What</th>
+            <th>Time</th>
+            <th>Location</th>
+        </tr>
+      </thead>
+      <tbody>
+        {events.map((row) => (
+          <tr>
+              <td>{row.date}</td>
+              <td>{row.title}</td>
+              <td>{row.time}</td>
+              <td>{row.location}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  )
+}
+
+<style>
+  .sheetTable {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+  }
+
+  .sheetTable th {
+    text-transform: uppercase;
+    font-weight: normal;
+    color: var(--theme-gray);
+  }
+
+  .sheetTable th,
+  .sheetTable td {
+    padding: 8px 12px 8px 0;
+    border-bottom: 1px solid var(--theme-gray);
+    vertical-align: top;
+  }
+</style>
