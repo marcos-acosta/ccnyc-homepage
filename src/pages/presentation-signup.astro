@@ -35,16 +35,35 @@ const signupEndpoint =
             <div><strong>Demos</strong><span>Members share what they’ve been working on.</span></div>
           </li>
         </ol>
+
+        <a class="scrollCue" href="#demo-signup" aria-label="Scroll to demo signup">
+          <span>Sign up<br />for demos</span>
+          <strong aria-hidden="true">↓</strong>
+        </a>
       </section>
 
-      <section class="demoSection" aria-labelledby="demo-heading">
+      <section class="demoSection" id="demo-signup" aria-labelledby="demo-heading">
       <p class="eyebrow">Share your work</p>
       <h2 class="demoHeading" id="demo-heading">Demo signup</h2>
-      <p class="intro">
-        Each demo is approximately 3 minutes and will be filmed. Sign up to
-        share something you’ve made, learned, or are curious about.
-      </p>
-      <p class="resetNote">Ten spots are available. The list resets each Tuesday.</p>
+      <div class="signupIntro">
+        <div>
+          <p class="intro">
+            Each demo is approximately 3 minutes and will be filmed. Sign up to
+            share something you’ve made, learned, or are curious about.
+          </p>
+          <p class="resetNote">Ten spots are available. The list resets each Tuesday.</p>
+        </div>
+        <figure class="qrCard">
+          <img
+            src="https://quickchart.io/qr?text=https%3A%2F%2Fccnyc.space%2Fpresentation-signup&size=220&margin=2&dark=000000&light=ffffff"
+            width="160"
+            height="160"
+            alt="QR code for the CCNYC demo signup page"
+            loading="lazy"
+          />
+          <figcaption>Scan to sign up</figcaption>
+        </figure>
+      </div>
 
       <form class="signupForm" id="signup-form">
         <div class="fields">
@@ -208,14 +227,23 @@ const signupEndpoint =
     h1 { margin: 0; font-family: "Tanker", monospace; font-size: clamp(3rem, 10vw, 5.5rem); font-weight: normal; line-height: .95; }
     .intro { max-width: 610px; margin: 22px 0 8px; font-size: 1.15rem; line-height: 1.5; }
     .resetNote { margin: 0; color: var(--theme-gray); }
-    .contentGrid { display: grid; grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr); gap: 72px; align-items: start; }
+    :global(html) { scroll-behavior: smooth; }
+    .contentGrid { display: grid; gap: 96px; }
+    .agendaSection { min-height: 560px; }
     .agenda { margin: 48px 0 0; padding: 0; list-style: none; border-top: 1px solid var(--theme-gray); }
     .agenda li { display: grid; grid-template-columns: 120px 1fr; gap: 24px; padding: 22px 4px; border-bottom: 1px solid rgb(65, 65, 65); }
     .agenda time { color: #ff3b30; font-weight: bold; }
     .agenda strong, .agenda span { display: block; }
     .agenda span { margin-top: 5px; color: var(--theme-gray); line-height: 1.4; }
-    .demoSection { padding-left: 56px; border-left: 1px solid rgb(65, 65, 65); }
+    .scrollCue { position: relative; display: flex; align-items: center; justify-content: center; flex-direction: column; width: 150px; height: 150px; margin: 56px auto 0; border-radius: 50%; background: #ff3b30; color: white; font-weight: bold; letter-spacing: .06em; line-height: 1.15; text-align: center; text-decoration: none; text-transform: uppercase; }
+    .scrollCue::before { position: absolute; inset: -10px; border: 2px dashed #ff3b30; border-radius: 50%; content: ""; animation: spin 10s linear infinite; }
+    .scrollCue strong { margin-top: 8px; font-size: 1.7rem; line-height: 1; animation: bounce 1.2s ease-in-out infinite; }
+    .demoSection { scroll-margin-top: 40px; padding-top: 72px; border-top: 1px solid rgb(65, 65, 65); }
     .demoHeading { margin: 0; font-family: "Tanker", monospace; font-size: clamp(2.5rem, 8vw, 4rem); font-weight: normal; line-height: 1; }
+    .signupIntro { display: grid; grid-template-columns: 1fr auto; gap: 48px; align-items: start; }
+    .qrCard { margin: -42px 0 0; padding: 12px; background: white; color: var(--background-color); text-align: center; }
+    .qrCard img { display: block; width: 160px; height: 160px; }
+    .qrCard figcaption { margin-top: 8px; font-size: .8rem; font-weight: bold; letter-spacing: .06em; text-transform: uppercase; }
     .signupForm { margin: 40px 0 18px; }
     .fields { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 12px; }
     label, label span { display: block; }
@@ -237,16 +265,24 @@ const signupEndpoint =
     .signupList li::marker { color: var(--theme-gray); }
     .signupList .available { color: rgb(115, 115, 115); font-style: italic; }
     .signupList .instagram { color: var(--theme-gray); text-align: right; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    @keyframes bounce { 50% { transform: translateY(5px); } }
+    @media (prefers-reduced-motion: reduce) {
+      :global(html) { scroll-behavior: auto; }
+      .scrollCue::before, .scrollCue strong { animation: none; }
+    }
     @media (max-width: 900px) {
       .signupPage { width: min(680px, calc(100% - 40px)); }
       .meetingDate { position: static; margin: -38px 0 52px; }
-      .contentGrid { grid-template-columns: 1fr; gap: 72px; }
-      .demoSection { padding: 0; border-left: 0; }
+      .contentGrid { gap: 72px; }
+      .agendaSection { min-height: 0; }
     }
     @media (max-width: 520px) {
       .signupPage { padding-top: 32px; }
       .siteIntro { margin-bottom: 48px; }
       .agenda li { grid-template-columns: 1fr; gap: 6px; }
+      .signupIntro { grid-template-columns: 1fr; }
+      .qrCard { width: max-content; margin: 26px auto 0; }
       .fields { grid-template-columns: 1fr; }
     }
   </style>
