@@ -19,6 +19,23 @@ const signupEndpoint =
         <header>
           <p class="eyebrow">Every Tuesday · 6–8 PM</p>
           <h1 id="agenda-heading">Meeting agenda</h1>
+          <div class="meetingProgress">
+            <div class="progressMeta">
+              <span id="progress-status">Meetup starts at 6 PM</span>
+              <span>6 PM <span aria-hidden="true">→</span> 8 PM</span>
+            </div>
+            <div
+              class="progressTrack"
+              id="meeting-progress"
+              role="progressbar"
+              aria-label="Tuesday meetup progress"
+              aria-valuemin="0"
+              aria-valuemax="100"
+              aria-valuenow="0"
+            >
+              <span id="progress-fill"></span>
+            </div>
+          </div>
         </header>
 
         <ol class="agenda" aria-label="Tuesday meeting agenda">
@@ -100,6 +117,9 @@ const signupEndpoint =
     const status = document.querySelector<HTMLElement>("#signup-status");
     const count = document.querySelector<HTMLElement>("#spot-count");
     const meetingDate = document.querySelector<HTMLElement>("#meeting-date");
+    const progress = document.querySelector<HTMLElement>("#meeting-progress");
+    const progressFill = document.querySelector<HTMLElement>("#progress-fill");
+    const progressStatus = document.querySelector<HTMLElement>("#progress-status");
     const endpoint = page?.dataset.signupEndpoint ?? "";
     const capacity = 10;
 
@@ -174,6 +194,36 @@ const signupEndpoint =
       return date.toISOString().slice(0, 10);
     }
 
+    function updateMeetingProgress() {
+      if (!progress || !progressFill || !progressStatus) return;
+      const parts = new Intl.DateTimeFormat("en-US", {
+        timeZone: "America/New_York",
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        hourCycle: "h23",
+      }).formatToParts(new Date());
+      const value = (type: "year" | "month" | "day" | "hour" | "minute" | "second") =>
+        Number(parts.find((part) => part.type === type)?.value);
+      const localDate = `${value("year")}-${String(value("month")).padStart(2, "0")}-${String(value("day")).padStart(2, "0")}`;
+      const meetingTuesday = currentMeetingTuesday();
+      const minutes = value("hour") * 60 + value("minute") + value("second") / 60;
+      let percent = localDate > meetingTuesday ? 100 : 0;
+
+      if (localDate === meetingTuesday) {
+        percent = Math.max(0, Math.min(100, ((minutes - 18 * 60) / 120) * 100));
+      }
+
+      progressFill.style.width = `${percent}%`;
+      progress.setAttribute("aria-valuenow", String(Math.round(percent)));
+      if (percent <= 0) progressStatus.textContent = "Meetup starts at 6 PM";
+      else if (percent >= 100) progressStatus.textContent = "Meetup complete";
+      else progressStatus.textContent = `Meetup in progress · ${Math.round(percent)}%`;
+    }
+
     async function loadSignups() {
       if (!endpoint) {
         form?.setAttribute("hidden", "");
@@ -223,6 +273,8 @@ const signupEndpoint =
     });
 
     showMeetingDate(currentMeetingTuesday());
+    updateMeetingProgress();
+    window.setInterval(updateMeetingProgress, 15000);
     loadSignups();
   </script>
 
@@ -234,6 +286,10 @@ const signupEndpoint =
     .meetingDate { position: absolute; top: 72px; right: 0; margin: 0; color: #ff3b30; font-size: 1rem; font-weight: bold; letter-spacing: .08em; text-transform: uppercase; }
     .eyebrow { margin: 0 0 10px; color: var(--theme-gray); font-size: .8rem; letter-spacing: .14em; text-transform: uppercase; }
     h1 { margin: 0; font-family: "Tanker", monospace; font-size: clamp(3rem, 10vw, 5.5rem); font-weight: normal; line-height: .95; }
+    .meetingProgress { margin-top: 30px; }
+    .progressMeta { display: flex; justify-content: space-between; gap: 20px; margin-bottom: 9px; color: var(--theme-gray); font-size: .8rem; letter-spacing: .04em; text-transform: uppercase; }
+    .progressTrack { height: 12px; overflow: hidden; border: 1px solid #ff3b30; background: rgb(45, 45, 45); }
+    .progressTrack span { display: block; width: 0; height: 100%; background: #ff3b30; transition: width 1s linear; }
     .intro { max-width: 610px; margin: 22px 0 8px; font-size: 1.15rem; line-height: 1.5; }
     .resetNote { margin: 0; color: var(--theme-gray); }
     :global(html) { scroll-behavior: smooth; }
