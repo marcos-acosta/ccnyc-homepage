@@ -28,7 +28,7 @@ const signupEndpoint =
               class="progressTrack"
               id="meeting-progress"
               role="progressbar"
-              aria-label="Tuesday meetup progress"
+              aria-label="Tuesday agenda progress until demos"
               aria-valuemin="0"
               aria-valuemax="100"
               aria-valuenow="0"
@@ -214,13 +214,13 @@ const signupEndpoint =
       let percent = localDate > meetingTuesday ? 100 : 0;
 
       if (localDate === meetingTuesday) {
-        percent = Math.max(0, Math.min(100, ((minutes - 18 * 60) / 120) * 100));
+        percent = Math.max(0, Math.min(100, ((minutes - 18 * 60) / 90) * 100));
       }
 
       progressFill.style.height = `${percent}%`;
       progress.setAttribute("aria-valuenow", String(Math.round(percent)));
       if (percent <= 0) progressStatus.textContent = "Meetup starts at 6 PM";
-      else if (percent >= 100) progressStatus.textContent = "Meetup complete";
+      else if (percent >= 100) progressStatus.textContent = "Demos have started";
       else progressStatus.textContent = `Meetup in progress · ${Math.round(percent)}%`;
     }
 
@@ -288,8 +288,8 @@ const signupEndpoint =
     h1 { margin: 0; font-family: "Tanker", monospace; font-size: clamp(3rem, 10vw, 5.5rem); font-weight: normal; line-height: .95; }
     .progressStatus { margin: 18px 0 0; color: var(--theme-gray); font-size: .8rem; letter-spacing: .06em; text-transform: uppercase; }
     .agendaBody { display: grid; grid-template-columns: 38px minmax(0, 1fr); gap: 22px; margin-top: 34px; }
-    .meetingProgress { display: flex; justify-content: center; }
-    .progressTrack { position: relative; width: 12px; min-height: 210px; border: 1px solid #ff3b30; background: rgb(45, 45, 45); }
+    .meetingProgress { display: flex; align-items: flex-start; justify-content: center; }
+    .progressTrack { position: relative; width: 12px; height: calc(100% - 56px); min-height: 150px; border: 1px solid #ff3b30; background: rgb(45, 45, 45); }
     .progressTrack::before, .progressTrack::after { position: absolute; left: 50%; z-index: 2; box-sizing: border-box; width: 16px; height: 16px; border: 3px solid #ff3b30; border-radius: 50%; background: var(--background-color); content: ""; }
     .progressTrack::before { top: 0; transform: translate(-50%, -50%); }
     .progressTrack::after { bottom: 0; transform: translate(-50%, 50%); }
@@ -303,7 +303,7 @@ const signupEndpoint =
     .agenda { display: grid; align-content: space-between; margin: 0; padding: 0; list-style: none; }
     .agenda li { position: relative; display: grid; grid-template-columns: 120px 1fr; gap: 24px; padding: 10px 4px; }
     .agenda li::before { position: absolute; top: 12px; left: -48px; z-index: 1; box-sizing: border-box; width: 14px; height: 14px; border: 3px solid #ff3b30; border-radius: 50%; background: var(--background-color); content: ""; }
-    .agenda li:first-child::before { display: none; }
+    .agenda li:first-child::before, .agenda li:last-child::before { display: none; }
     .agenda time { color: #ff3b30; font-weight: bold; }
     .agenda strong, .agenda span { display: block; }
     .agenda span { margin-top: 5px; color: var(--theme-gray); line-height: 1.4; }
