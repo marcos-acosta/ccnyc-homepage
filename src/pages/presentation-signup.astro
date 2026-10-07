@@ -12,6 +12,7 @@ const signupEndpoint =
       <a class="brandLink" href="/" aria-label="Back to CCNYC homepage">CCNYC</a>
       <p>Welcome to Creative Coding NYC</p>
     </div>
+    <p class="meetingDate" id="meeting-date">Tuesday meetup</p>
 
     <div class="contentGrid">
       <section class="agendaSection" aria-labelledby="agenda-heading">
@@ -66,7 +67,7 @@ const signupEndpoint =
       </p>
 
       <div class="listHeading">
-        <h3 id="meeting-heading">Tuesday’s demos</h3>
+        <h3>Demo lineup</h3>
         <span id="spot-count">0 / 10</span>
       </div>
       <ol class="signupList" id="signup-list"></ol>
@@ -83,7 +84,7 @@ const signupEndpoint =
     const list = document.querySelector<HTMLOListElement>("#signup-list");
     const status = document.querySelector<HTMLElement>("#signup-status");
     const count = document.querySelector<HTMLElement>("#spot-count");
-    const meetingHeading = document.querySelector<HTMLElement>("#meeting-heading");
+    const meetingDate = document.querySelector<HTMLElement>("#meeting-date");
     const endpoint = page?.dataset.signupEndpoint ?? "";
     const capacity = 10;
 
@@ -136,9 +137,9 @@ const signupEndpoint =
     }
 
     function showMeetingDate(date: string | undefined) {
-      if (!date || !meetingHeading) return;
+      if (!date || !meetingDate) return;
       const parsed = new Date(`${date}T12:00:00`);
-      meetingHeading.textContent = parsed.toLocaleDateString("en-US", {
+      meetingDate.textContent = parsed.toLocaleDateString("en-US", {
         weekday: "long", month: "long", day: "numeric",
       });
     }
@@ -195,10 +196,11 @@ const signupEndpoint =
   </script>
 
   <style>
-    .signupPage { box-sizing: border-box; width: min(1180px, calc(100% - 48px)); margin: 0 auto; padding: 64px 0 80px; }
+    .signupPage { position: relative; box-sizing: border-box; width: min(1180px, calc(100% - 48px)); margin: 0 auto; padding: 64px 0 80px; }
     .siteIntro { margin-bottom: 64px; }
     .brandLink { display: inline-block; color: white; font-family: "Tanker", monospace; font-size: clamp(5rem, 16vw, 8rem); line-height: .85; text-decoration: none; }
     .siteIntro p { margin: 8px 0 0; color: var(--theme-gray); font-size: 1.05rem; }
+    .meetingDate { position: absolute; top: 72px; right: 0; margin: 0; color: #ff3b30; font-size: 1rem; font-weight: bold; letter-spacing: .08em; text-transform: uppercase; }
     .eyebrow { margin: 0 0 10px; color: var(--theme-gray); font-size: .8rem; letter-spacing: .14em; text-transform: uppercase; }
     h1 { margin: 0; font-family: "Tanker", monospace; font-size: clamp(3rem, 10vw, 5.5rem); font-weight: normal; line-height: .95; }
     .intro { max-width: 610px; margin: 22px 0 8px; font-size: 1.15rem; line-height: 1.5; }
@@ -233,6 +235,7 @@ const signupEndpoint =
     .signupList .instagram { color: var(--theme-gray); text-align: right; }
     @media (max-width: 900px) {
       .signupPage { width: min(680px, calc(100% - 40px)); }
+      .meetingDate { position: static; margin: -38px 0 52px; }
       .contentGrid { grid-template-columns: 1fr; gap: 72px; }
       .demoSection { padding: 0; border-left: 0; }
     }
