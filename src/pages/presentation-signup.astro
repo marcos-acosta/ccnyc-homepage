@@ -43,7 +43,10 @@ const signupEndpoint =
             height="150"
             alt="QR code for the CCNYC demo signup page"
           />
-          <span>Sign up<br />for demos</span>
+          <span class="qrCopy">
+            <small>Scan to</small>
+            <strong>Sign up<br />for demos</strong>
+          </span>
         </a>
       </section>
 
@@ -226,8 +229,12 @@ const signupEndpoint =
     .agenda time { color: #ff3b30; font-weight: bold; }
     .agenda strong, .agenda span { display: block; }
     .agenda span { margin-top: 5px; color: var(--theme-gray); line-height: 1.4; }
-    .qrPrompt { display: flex; grid-column: 2; grid-row: 1 / span 2; align-self: center; align-items: center; width: max-content; color: white; font-size: 1.15rem; font-weight: bold; gap: 24px; letter-spacing: .06em; line-height: 1.15; text-decoration: none; text-transform: uppercase; }
+    .qrPrompt { display: flex; grid-column: 2; grid-row: 1 / span 2; align-self: center; align-items: center; width: max-content; color: white; gap: 24px; text-decoration: none; }
     .qrPrompt img { display: block; width: 150px; height: 150px; }
+    .qrCopy { padding-left: 24px; border-left: 1px solid var(--theme-gray); }
+    .qrCopy small, .qrCopy strong { display: block; text-transform: uppercase; }
+    .qrCopy small { margin-bottom: 8px; color: var(--theme-gray); font-size: .75rem; font-weight: normal; letter-spacing: .16em; }
+    .qrCopy strong { font-family: "Tanker", monospace; font-size: 2rem; font-weight: normal; letter-spacing: .03em; line-height: .95; }
     .demoSection { scroll-margin-top: 40px; }
     .demoHeading { margin: 0; font-family: "Tanker", monospace; font-size: clamp(2.5rem, 8vw, 4rem); font-weight: normal; line-height: 1; }
     .signupForm { margin: 40px 0 18px; }
@@ -265,8 +272,10 @@ const signupEndpoint =
       .signupPage { padding-top: 32px; }
       .siteIntro { margin-bottom: 48px; }
       .agenda li { grid-template-columns: 1fr; gap: 6px; }
-      .qrPrompt { gap: 16px; font-size: 1rem; }
+      .qrPrompt { gap: 16px; }
       .qrPrompt img { width: 120px; height: 120px; }
+      .qrCopy { padding-left: 16px; }
+      .qrCopy strong { font-size: 1.6rem; }
       .fields { grid-template-columns: 1fr; }
     }
   </style>
