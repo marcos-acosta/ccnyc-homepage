@@ -19,11 +19,12 @@ const signupEndpoint =
         <header>
           <p class="eyebrow">Every Tuesday · 6–8 PM</p>
           <h1 id="agenda-heading">Meeting agenda</h1>
+          <p class="progressStatus" id="progress-status">Meetup starts at 6 PM</p>
+        </header>
+
+        <div class="agendaBody">
           <div class="meetingProgress">
-            <div class="progressMeta">
-              <span id="progress-status">Meetup starts at 6 PM</span>
-              <span>6 PM <span aria-hidden="true">→</span> 8 PM</span>
-            </div>
+            <span class="progressTime">6 PM</span>
             <div
               class="progressTrack"
               id="meeting-progress"
@@ -35,23 +36,24 @@ const signupEndpoint =
             >
               <span id="progress-fill"></span>
             </div>
+            <span class="progressTime">8 PM</span>
           </div>
-        </header>
 
-        <ol class="agenda" aria-label="Tuesday meeting agenda">
-          <li>
-            <time>6:00–7:20</time>
-            <div><strong>Chill, code, collaborate</strong><span>Settle in, make something, and meet people.</span></div>
-          </li>
-          <li>
-            <time>7:20–7:30</time>
-            <div><strong>Announcements</strong><span>Community news, events, and opportunities.</span></div>
-          </li>
-          <li>
-            <time>7:30–8:00</time>
-            <div><strong>Demos</strong><span>Members share what they’ve been working on.</span></div>
-          </li>
-        </ol>
+          <ol class="agenda" aria-label="Tuesday meeting agenda">
+            <li>
+              <time>6:00–7:20</time>
+              <div><strong>Chill, code, collaborate</strong><span>Settle in, make something, and meet people.</span></div>
+            </li>
+            <li>
+              <time>7:20–7:30</time>
+              <div><strong>Announcements</strong><span>Community news, events, and opportunities.</span></div>
+            </li>
+            <li>
+              <time>7:30–8:00</time>
+              <div><strong>Demos</strong><span>Members share what they’ve been working on.</span></div>
+            </li>
+          </ol>
+        </div>
 
         <a class="qrPrompt" href="#demo-signup" aria-label="Go to demo signup">
           <span class="qrCopy">
@@ -217,7 +219,7 @@ const signupEndpoint =
         percent = Math.max(0, Math.min(100, ((minutes - 18 * 60) / 120) * 100));
       }
 
-      progressFill.style.width = `${percent}%`;
+      progressFill.style.height = `${percent}%`;
       progress.setAttribute("aria-valuenow", String(Math.round(percent)));
       if (percent <= 0) progressStatus.textContent = "Meetup starts at 6 PM";
       else if (percent >= 100) progressStatus.textContent = "Meetup complete";
@@ -286,18 +288,20 @@ const signupEndpoint =
     .meetingDate { position: absolute; top: 72px; right: 0; margin: 0; color: #ff3b30; font-size: 1rem; font-weight: bold; letter-spacing: .08em; text-transform: uppercase; }
     .eyebrow { margin: 0 0 10px; color: var(--theme-gray); font-size: .8rem; letter-spacing: .14em; text-transform: uppercase; }
     h1 { margin: 0; font-family: "Tanker", monospace; font-size: clamp(3rem, 10vw, 5.5rem); font-weight: normal; line-height: .95; }
-    .meetingProgress { margin-top: 30px; }
-    .progressMeta { display: flex; justify-content: space-between; gap: 20px; margin-bottom: 9px; color: var(--theme-gray); font-size: .8rem; letter-spacing: .04em; text-transform: uppercase; }
-    .progressTrack { height: 12px; overflow: hidden; border: 1px solid #ff3b30; background: rgb(45, 45, 45); }
-    .progressTrack span { display: block; width: 0; height: 100%; background: #ff3b30; transition: width 1s linear; }
+    .progressStatus { margin: 18px 0 0; color: var(--theme-gray); font-size: .8rem; letter-spacing: .06em; text-transform: uppercase; }
+    .agendaBody { display: grid; grid-template-columns: 38px minmax(0, 1fr); gap: 22px; margin-top: 34px; }
+    .meetingProgress { display: grid; grid-template-rows: auto minmax(0, 1fr) auto; justify-items: center; gap: 8px; }
+    .progressTime { color: var(--theme-gray); font-size: .7rem; white-space: nowrap; }
+    .progressTrack { width: 12px; min-height: 210px; overflow: hidden; border: 1px solid #ff3b30; background: rgb(45, 45, 45); }
+    .progressTrack span { display: block; width: 100%; height: 0; background: #ff3b30; transition: height 1s linear; }
     .intro { max-width: 610px; margin: 22px 0 8px; font-size: 1.15rem; line-height: 1.5; }
     .resetNote { margin: 0; color: var(--theme-gray); }
     :global(html) { scroll-behavior: smooth; }
     .contentGrid { display: grid; gap: 56px; }
     .agendaSection { display: grid; grid-template-columns: minmax(0, 1fr) auto; column-gap: 72px; }
-    .agendaSection header, .agenda { grid-column: 1; }
-    .agenda { margin: 48px 0 0; padding: 0; list-style: none; border-top: 1px solid var(--theme-gray); }
-    .agenda li { display: grid; grid-template-columns: 120px 1fr; gap: 24px; padding: 22px 4px; border-bottom: 1px solid rgb(65, 65, 65); }
+    .agendaSection header, .agendaBody { grid-column: 1; }
+    .agenda { display: grid; align-content: space-between; margin: 0; padding: 0; list-style: none; }
+    .agenda li { display: grid; grid-template-columns: 120px 1fr; gap: 24px; padding: 10px 4px; }
     .agenda time { color: #ff3b30; font-weight: bold; }
     .agenda strong, .agenda span { display: block; }
     .agenda span { margin-top: 5px; color: var(--theme-gray); line-height: 1.4; }
