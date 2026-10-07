@@ -159,6 +159,21 @@ const signupEndpoint =
       });
     }
 
+    function currentMeetingTuesday() {
+      const parts = new Intl.DateTimeFormat("en-US", {
+        timeZone: "America/New_York",
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+      }).formatToParts(new Date());
+      const value = (type: "year" | "month" | "day") =>
+        Number(parts.find((part) => part.type === type)?.value);
+      const date = new Date(Date.UTC(value("year"), value("month") - 1, value("day")));
+      const daysSinceTuesday = (date.getUTCDay() - 2 + 7) % 7;
+      date.setUTCDate(date.getUTCDate() - daysSinceTuesday);
+      return date.toISOString().slice(0, 10);
+    }
+
     async function loadSignups() {
       if (!endpoint) {
         form?.setAttribute("hidden", "");
@@ -207,6 +222,7 @@ const signupEndpoint =
       }
     });
 
+    showMeetingDate(currentMeetingTuesday());
     loadSignups();
   </script>
 
