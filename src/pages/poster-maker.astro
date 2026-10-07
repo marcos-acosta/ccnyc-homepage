@@ -61,6 +61,7 @@ const location = upcoming?.event.location || "Location TBA";
       <section class="posterWrap" aria-label="Poster preview">
         <div class="poster" id="poster">
           <canvas id="shader-canvas" width="1080" height="1350"></canvas>
+          <canvas id="ascii-canvas" width="1080" height="1350" aria-hidden="true"></canvas>
           <div class="posterCopy">
             <h1>CCNYC</h1>
             <div class="eventCopy">
@@ -75,7 +76,7 @@ const location = upcoming?.event.location || "Location TBA";
       <aside class="controls" aria-label="Poster controls">
         <div class="controlHeading">
           <div>
-            <p class="eyebrow">Live shader studio</p>
+            <p class="eyebrow">ASCII flow studio</p>
             <h2>Shape the background</h2>
           </div>
           <button class="iconButton" id="randomize" type="button">Randomize</button>
@@ -113,6 +114,14 @@ const location = upcoming?.event.location || "Location TBA";
           <span>Grain <output id="grain-output">0.08</output></span>
           <input id="grain" type="range" min="0" max="0.3" step="0.01" value="0.08" />
         </label>
+        <label>
+          <span>ASCII density <output id="ascii-density-output">42</output></span>
+          <input id="ascii-density" type="range" min="20" max="72" step="1" value="42" />
+        </label>
+        <label>
+          <span>ASCII intensity <output id="ascii-opacity-output">0.48</output></span>
+          <input id="ascii-opacity" type="range" min="0" max="0.9" step="0.01" value="0.48" />
+        </label>
 
         <div class="actions">
           <button id="pause" type="button">Pause motion</button>
@@ -125,6 +134,8 @@ const location = upcoming?.event.location || "Location TBA";
 
   <script>
     const canvas = document.querySelector<HTMLCanvasElement>("#shader-canvas");
+    const asciiCanvas = document.querySelector<HTMLCanvasElement>("#ascii-canvas");
+    const asciiContext = asciiCanvas?.getContext("2d");
     const maker = document.querySelector<HTMLElement>(".maker");
     const gl = canvas?.getContext("webgl", { preserveDrawingBuffer: true });
 
@@ -212,12 +223,15 @@ const location = upcoming?.event.location || "Location TBA";
     const warp = getInput("warp");
     const speed = getInput("speed");
     const grain = getInput("grain");
+    const asciiDensity = getInput("ascii-density");
+    const asciiOpacity = getInput("ascii-opacity");
     const colorA = getInput("color-a");
     const colorB = getInput("color-b");
     const colorC = getInput("color-c");
     let paused = false;
     let heldTime = 0;
     let lastNow = performance.now();
+    let lastAsciiFrame = 0;
 
     const hex = (value: string) => [1, 3, 5].map((start) => parseInt(value.slice(start, start + 2), 16) / 255);
     const uniform = (name: string) => gl && program ? gl.getUniformLocation(program, name) : null;
@@ -226,6 +240,32 @@ const location = upcoming?.event.location || "Location TBA";
       warp: uniform("u_warp"), grain: uniform("u_grain"), mode: uniform("u_mode"),
       colorA: uniform("u_colorA"), colorB: uniform("u_colorB"), colorC: uniform("u_colorC"),
     };
+
+    function drawAsciiFlow(time: number) {
+      if (!asciiCanvas || !asciiContext) return;
+      const columns = Number(asciiDensity.value);
+      const cell = asciiCanvas.width / columns;
+      const rows = Math.ceil(asciiCanvas.height / cell);
+      const characters = " .·:;+*#%@";
+      const opacity = Number(asciiOpacity.value);
+      asciiContext.clearRect(0, 0, asciiCanvas.width, asciiCanvas.height);
+      asciiContext.font = `700 ${cell * .78}px monospace`;
+      asciiContext.textAlign = "center";
+      asciiContext.textBaseline = "middle";
+      for (let row = 0; row < rows; row += 1) {
+        for (let column = 0; column < columns; column += 1) {
+          const wave = Math.sin(column * .27 + time * 1.7 + Math.sin(row * .16 - time))
+            + Math.cos(row * .22 - time * 1.15 + Math.sin(column * .11));
+          const normalized = (wave + 2) / 4;
+          const index = Math.min(characters.length - 1, Math.floor(normalized * characters.length));
+          const character = characters[index];
+          if (character === " ") continue;
+          const alpha = opacity * (.28 + normalized * .72);
+          asciiContext.fillStyle = `rgba(255,255,255,${alpha})`;
+          asciiContext.fillText(character, (column + .5) * cell, (row + .5) * cell);
+        }
+      }
+    }
 
     function render(now: number) {
       if (!gl || !program || !canvas) return;
@@ -242,11 +282,15 @@ const location = upcoming?.event.location || "Location TBA";
       gl.uniform3fv(uniforms.colorB, hex(colorB.value));
       gl.uniform3fv(uniforms.colorC, hex(colorC.value));
       gl.drawArrays(gl.TRIANGLES, 0, 6);
+      if (now - lastAsciiFrame > 70) {
+        drawAsciiFlow(heldTime);
+        lastAsciiFrame = now;
+      }
       requestAnimationFrame(render);
     }
     requestAnimationFrame(render);
 
-    for (const input of [scale, warp, speed, grain]) {
+    for (const input of [scale, warp, speed, grain, asciiDensity, asciiOpacity]) {
       const output = document.querySelector<HTMLOutputElement>(`#${input.id}-output`);
       input.addEventListener("input", () => { if (output) output.value = input.value; });
     }
@@ -262,7 +306,9 @@ const location = upcoming?.event.location || "Location TBA";
       scale.value = (1.5 + Math.random() * 6).toFixed(1);
       warp.value = (Math.random() * 1.4).toFixed(2);
       grain.value = (Math.random() * .18).toFixed(2);
-      for (const input of [scale, warp, grain]) input.dispatchEvent(new Event("input"));
+      asciiDensity.value = String(28 + Math.floor(Math.random() * 35));
+      asciiOpacity.value = (.28 + Math.random() * .45).toFixed(2);
+      for (const input of [scale, warp, grain, asciiDensity, asciiOpacity]) input.dispatchEvent(new Event("input"));
     });
 
     const pauseButton = document.querySelector<HTMLButtonElement>("#pause");
@@ -291,6 +337,7 @@ const location = upcoming?.event.location || "Location TBA";
       const ctx = output.getContext("2d");
       if (!ctx) return;
       ctx.drawImage(canvas, 0, 0);
+      if (asciiCanvas) ctx.drawImage(asciiCanvas, 0, 0);
       ctx.fillStyle = "white";
       ctx.font = "220px Tanker";
       ctx.fillText("CCNYC", 72, 235);
@@ -317,6 +364,7 @@ const location = upcoming?.event.location || "Location TBA";
     .posterWrap { position: sticky; top: 24px; }
     .poster { position: relative; overflow: hidden; width: 100%; aspect-ratio: 4 / 5; background: #ff3b30; box-shadow: 0 28px 80px rgb(0 0 0 / .35); }
     #shader-canvas { display: block; width: 100%; height: 100%; }
+    #ascii-canvas { position: absolute; inset: 0; width: 100%; height: 100%; mix-blend-mode: screen; pointer-events: none; }
     .posterCopy { position: absolute; inset: 0; display: flex; justify-content: space-between; flex-direction: column; padding: 7%; box-sizing: border-box; color: white; pointer-events: none; text-shadow: 0 2px 24px rgb(0 0 0 / .25); }
     .posterCopy h1 { margin: 0; font-family: "Tanker", monospace; font-size: clamp(6rem, 14vw, 10rem); font-weight: normal; line-height: .8; }
     .eventCopy p { max-width: 82%; margin: 0 0 8px; font-size: clamp(1rem, 2.2vw, 1.55rem); font-weight: 700; line-height: 1.05; }
