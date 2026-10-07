@@ -18,6 +18,10 @@ const events = sheetRowsToEvents(
     <div class="titleContainer">
       <div class="ccnycTitle">CCNYC</div>
       <div class="ccnycSubtitle">creative coding nyc</div>
+      <a class="signupButton" href="/presentation-signup">
+        <span>Meeting agenda + demo signup</span>
+        <span aria-hidden="true">→</span>
+      </a>
     </div>
     <div class="textContainer">
       <p>
@@ -115,6 +119,36 @@ const events = sheetRowsToEvents(
 
     .ccnycSubtitle {
       font-style: italic;
+    }
+
+    .signupButton {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 28px;
+      min-width: min(420px, calc(100vw - 40px));
+      margin-top: 30px;
+      padding: 18px 22px;
+      box-sizing: border-box;
+      border: 2px solid white;
+      background: white;
+      color: var(--background-color);
+      font-size: 1rem;
+      font-weight: bold;
+      letter-spacing: 0.04em;
+      text-decoration: none;
+      text-transform: uppercase;
+      transition: background-color 120ms ease, color 120ms ease;
+    }
+
+    .signupButton:hover {
+      background: var(--background-color);
+      color: white;
+    }
+
+    .signupButton:focus-visible {
+      outline: 2px solid white;
+      outline-offset: 4px;
     }
 
     .textContainer {

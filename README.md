@@ -1,46 +1,42 @@
-# Astro Starter Kit: Basics
+# CCNYC homepage
+
+## Local development
 
 ```sh
-npm create astro@latest -- --template basics
+npm install
+npm run dev
 ```
 
-> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
+Copy `.env.example` to `.env` and fill in the values used by the site.
 
-## 🚀 Project Structure
+## Presentation signup setup
 
-Inside of your Astro project, you'll see the following folders and files:
+The `/presentation-signup` page uses a Google Sheet as a lightweight shared
+store. It keeps up to 10 names per New York calendar day. A new day appears
+empty automatically; older rows remain in the sheet as history.
 
-```text
-/
-├── public/
-│   └── favicon.svg
-├── src
-│   ├── assets
-│   │   └── astro.svg
-│   ├── components
-│   │   └── Welcome.astro
-│   ├── layouts
-│   │   └── Layout.astro
-│   └── pages
-│       └── index.astro
-└── package.json
-```
+1. Create or open the Google Sheet that should hold the signups.
+2. In the sheet, open **Extensions → Apps Script**.
+3. Replace the editor contents with
+   `google-apps-script/presentation-signup.gs` from this repository and save.
+4. Select **Deploy → New deployment → Web app**.
+5. Set **Execute as** to **Me** and **Who has access** to **Anyone**, then deploy.
+6. Copy the web app URL ending in `/exec`.
+7. Add it to the production environment and local `.env` as:
 
-To learn more about the folder structure of an Astro project, refer to [our guide on project structure](https://docs.astro.build/en/basics/project-structure/).
+   ```env
+   PUBLIC_PRESENTATION_SIGNUP_URL=https://script.google.com/macros/s/DEPLOYMENT_ID/exec
+   ```
 
-## 🧞 Commands
+8. Rebuild and deploy the website.
 
-All commands are run from the root of the project, from a terminal:
+When the Apps Script changes later, create a new deployment version from
+**Deploy → Manage deployments** so the live endpoint receives the update.
 
-| Command                   | Action                                           |
-| :------------------------ | :----------------------------------------------- |
-| `npm install`             | Installs dependencies                            |
-| `npm run dev`             | Starts local dev server at `localhost:4321`      |
-| `npm run build`           | Build your production site to `./dist/`          |
-| `npm run preview`         | Preview your build locally, before deploying     |
-| `npm run astro ...`       | Run CLI commands like `astro add`, `astro check` |
-| `npm run astro -- --help` | Get help using the Astro CLI                     |
+## Commands
 
-## 👀 Want to learn more?
-
-Feel free to check [our documentation](https://docs.astro.build) or jump into our [Discord server](https://astro.build/chat).
+| Command | Action |
+| :-- | :-- |
+| `npm run dev` | Start the local development server |
+| `npm run build` | Build the static production site in `dist/` |
+| `npm run preview` | Preview the production build locally |
