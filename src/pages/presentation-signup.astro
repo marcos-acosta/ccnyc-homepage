@@ -13,27 +13,30 @@ const signupEndpoint =
       <p>Welcome to Creative Coding NYC</p>
     </div>
 
-    <header>
-      <p class="eyebrow">Every Tuesday · 6–8 PM</p>
-      <h1>Meeting agenda</h1>
-    </header>
+    <div class="contentGrid">
+      <section class="agendaSection" aria-labelledby="agenda-heading">
+        <header>
+          <p class="eyebrow">Every Tuesday · 6–8 PM</p>
+          <h1 id="agenda-heading">Meeting agenda</h1>
+        </header>
 
-    <ol class="agenda" aria-label="Tuesday meeting agenda">
-      <li>
-        <time>6:00–7:15</time>
-        <div><strong>Chill, code, collaborate</strong><span>Settle in, make something, and meet people.</span></div>
-      </li>
-      <li>
-        <time>7:15–7:25</time>
-        <div><strong>Announcements</strong><span>Community news, events, and opportunities.</span></div>
-      </li>
-      <li>
-        <time>7:25–8:00</time>
-        <div><strong>Demos</strong><span>Members share what they’ve been working on.</span></div>
-      </li>
-    </ol>
+        <ol class="agenda" aria-label="Tuesday meeting agenda">
+          <li>
+            <time>6:00–7:15</time>
+            <div><strong>Chill, code, collaborate</strong><span>Settle in, make something, and meet people.</span></div>
+          </li>
+          <li>
+            <time>7:15–7:25</time>
+            <div><strong>Announcements</strong><span>Community news, events, and opportunities.</span></div>
+          </li>
+          <li>
+            <time>7:25–8:00</time>
+            <div><strong>Demos</strong><span>Members share what they’ve been working on.</span></div>
+          </li>
+        </ol>
+      </section>
 
-    <section class="demoSection" aria-labelledby="demo-heading">
+      <section class="demoSection" aria-labelledby="demo-heading">
       <p class="eyebrow">Share your work</p>
       <h2 class="demoHeading" id="demo-heading">Demo signup</h2>
       <p class="intro">
@@ -67,7 +70,8 @@ const signupEndpoint =
         <span id="spot-count">0 / 10</span>
       </div>
       <ol class="signupList" id="signup-list"></ol>
-    </section>
+      </section>
+    </div>
   </main>
 
   <script>
@@ -191,7 +195,7 @@ const signupEndpoint =
   </script>
 
   <style>
-    .signupPage { box-sizing: border-box; width: min(680px, calc(100% - 40px)); margin: 0 auto; padding: 64px 0 80px; }
+    .signupPage { box-sizing: border-box; width: min(1180px, calc(100% - 48px)); margin: 0 auto; padding: 64px 0 80px; }
     .siteIntro { margin-bottom: 64px; }
     .brandLink { display: inline-block; color: white; font-family: "Tanker", monospace; font-size: clamp(5rem, 16vw, 8rem); line-height: .85; text-decoration: none; }
     .siteIntro p { margin: 8px 0 0; color: var(--theme-gray); font-size: 1.05rem; }
@@ -199,12 +203,13 @@ const signupEndpoint =
     h1 { margin: 0; font-family: "Tanker", monospace; font-size: clamp(3rem, 10vw, 5.5rem); font-weight: normal; line-height: .95; }
     .intro { max-width: 610px; margin: 22px 0 8px; font-size: 1.15rem; line-height: 1.5; }
     .resetNote { margin: 0; color: var(--theme-gray); }
-    .agenda { margin: 48px 0 72px; padding: 0; list-style: none; border-top: 1px solid var(--theme-gray); }
+    .contentGrid { display: grid; grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr); gap: 72px; align-items: start; }
+    .agenda { margin: 48px 0 0; padding: 0; list-style: none; border-top: 1px solid var(--theme-gray); }
     .agenda li { display: grid; grid-template-columns: 120px 1fr; gap: 24px; padding: 22px 4px; border-bottom: 1px solid rgb(65, 65, 65); }
     .agenda time { color: #ff3b30; font-weight: bold; }
     .agenda strong, .agenda span { display: block; }
     .agenda span { margin-top: 5px; color: var(--theme-gray); line-height: 1.4; }
-    .demoSection { padding-top: 8px; }
+    .demoSection { padding-left: 56px; border-left: 1px solid rgb(65, 65, 65); }
     .demoHeading { margin: 0; font-family: "Tanker", monospace; font-size: clamp(2.5rem, 8vw, 4rem); font-weight: normal; line-height: 1; }
     .signupForm { margin: 40px 0 18px; }
     .fields { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 12px; }
@@ -226,6 +231,11 @@ const signupEndpoint =
     .signupList li::marker { color: var(--theme-gray); }
     .signupList .available { color: rgb(115, 115, 115); font-style: italic; }
     .signupList .instagram { color: var(--theme-gray); text-align: right; }
+    @media (max-width: 900px) {
+      .signupPage { width: min(680px, calc(100% - 40px)); }
+      .contentGrid { grid-template-columns: 1fr; gap: 72px; }
+      .demoSection { padding: 0; border-left: 0; }
+    }
     @media (max-width: 520px) {
       .signupPage { padding-top: 32px; }
       .siteIntro { margin-bottom: 48px; }
