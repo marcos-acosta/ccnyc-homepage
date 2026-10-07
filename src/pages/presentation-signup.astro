@@ -67,8 +67,11 @@ const signupEndpoint =
       </p>
 
       <div class="listHeading">
-        <h3>Demo lineup</h3>
-        <span id="spot-count">0 / 10</span>
+        <div class="lineupTitle">
+          <h3>Demo lineup</h3>
+          <span id="spot-count">0 / 10</span>
+        </div>
+        <h3>Instagram</h3>
       </div>
       <ol class="signupList" id="signup-list"></ol>
       </section>
@@ -226,6 +229,7 @@ const signupEndpoint =
     .status { min-height: 1.3em; margin: 0 0 42px; color: var(--theme-gray); }
     .status.error { color: #ff9e9e; }
     .listHeading { display: flex; align-items: baseline; justify-content: space-between; gap: 20px; border-bottom: 1px solid var(--theme-gray); }
+    .lineupTitle { display: flex; align-items: baseline; gap: 12px; }
     h3 { margin: 0 0 12px; font-size: 1rem; font-weight: normal; letter-spacing: .08em; text-transform: uppercase; }
     #spot-count { color: var(--theme-gray); }
     .signupList { margin: 0; padding: 0; list-style-position: inside; }
