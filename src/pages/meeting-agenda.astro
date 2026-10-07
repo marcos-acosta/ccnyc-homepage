@@ -301,7 +301,8 @@ const signupEndpoint =
     .agendaSection { display: grid; grid-template-columns: minmax(0, 1fr) auto; column-gap: 72px; }
     .agendaSection header, .agendaBody { grid-column: 1; }
     .agenda { display: grid; align-content: space-between; margin: 0; padding: 0; list-style: none; }
-    .agenda li { display: grid; grid-template-columns: 120px 1fr; gap: 24px; padding: 10px 4px; }
+    .agenda li { position: relative; display: grid; grid-template-columns: 120px 1fr; gap: 24px; padding: 10px 4px; }
+    .agenda li::before { position: absolute; top: 12px; left: -48px; z-index: 1; box-sizing: border-box; width: 14px; height: 14px; border: 3px solid #ff3b30; border-radius: 50%; background: var(--background-color); content: ""; }
     .agenda time { color: #ff3b30; font-weight: bold; }
     .agenda strong, .agenda span { display: block; }
     .agenda span { margin-top: 5px; color: var(--theme-gray); line-height: 1.4; }
