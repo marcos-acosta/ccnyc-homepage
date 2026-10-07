@@ -1,0 +1,353 @@
+---
+import Layout from "../layouts/Layout.astro";
+import { fetchSheetRows } from "../lib/sheets";
+import { sheetRowsToEvents } from "../lib/preprocess";
+
+const events = sheetRowsToEvents(
+  await fetchSheetRows({ range: "'Poster Signups'!A2:L" }),
+);
+
+const parseDate = (value: string) => {
+  const parsed = new Date(`${value} 12:00:00`);
+  return Number.isNaN(parsed.valueOf()) ? null : parsed;
+};
+
+const upcoming = events
+  .map((event) => ({ event, date: parseDate(event.date) }))
+  .filter(({ date }) => date && date.valueOf() >= Date.now() - 86_400_000)
+  .sort((a, b) => a.date!.valueOf() - b.date!.valueOf())[0];
+
+const nextTuesday = () => {
+  const now = new Date();
+  const nyDate = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "America/New_York",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(now);
+  const [year, month, day] = nyDate.split("-").map(Number);
+  const date = new Date(Date.UTC(year, month - 1, day));
+  const daysUntilTuesday = (2 - date.getUTCDay() + 7) % 7 || 7;
+  date.setUTCDate(date.getUTCDate() + daysUntilTuesday);
+  return date;
+};
+
+const eventDate = upcoming?.date ?? nextTuesday();
+const dateLabel = eventDate.toLocaleDateString("en-US", {
+  timeZone: "UTC",
+  weekday: "long",
+  month: "long",
+  day: "numeric",
+});
+const location = upcoming?.event.location || "Location TBA";
+---
+
+<Layout>
+  <main
+    class="maker"
+    data-date={dateLabel}
+    data-location={location}
+    data-time="6–8 PM"
+  >
+    <header class="makerHeader">
+      <div>
+        <a href="/" class="brand">CCNYC</a>
+        <p>Poster maker</p>
+      </div>
+      <a href="/meeting-agenda">Meeting agenda →</a>
+    </header>
+
+    <div class="workspace">
+      <section class="posterWrap" aria-label="Poster preview">
+        <div class="poster" id="poster">
+          <canvas id="shader-canvas" width="1080" height="1350"></canvas>
+          <div class="posterCopy">
+            <h1>CCNYC</h1>
+            <div class="eventCopy">
+              <p>{dateLabel}</p>
+              <p>{location}</p>
+              <p class="posterTime">6–8 PM</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <aside class="controls" aria-label="Poster controls">
+        <div class="controlHeading">
+          <div>
+            <p class="eyebrow">Live shader studio</p>
+            <h2>Shape the background</h2>
+          </div>
+          <button class="iconButton" id="randomize" type="button">Randomize</button>
+        </div>
+
+        <label>
+          <span>Shader</span>
+          <select id="shader-mode">
+            <option value="0">Liquid field</option>
+            <option value="1">Electric bands</option>
+            <option value="2">Signal ripples</option>
+            <option value="3">Warp grid</option>
+          </select>
+        </label>
+
+        <div class="colorGrid">
+          <label><span>Color 1</span><input id="color-a" type="color" value="#ff3b30" /></label>
+          <label><span>Color 2</span><input id="color-b" type="color" value="#6b4eff" /></label>
+          <label><span>Color 3</span><input id="color-c" type="color" value="#00e5a8" /></label>
+        </div>
+
+        <label>
+          <span>Scale <output id="scale-output">3.2</output></span>
+          <input id="scale" type="range" min="1" max="9" step="0.1" value="3.2" />
+        </label>
+        <label>
+          <span>Warp <output id="warp-output">0.55</output></span>
+          <input id="warp" type="range" min="0" max="1.5" step="0.01" value="0.55" />
+        </label>
+        <label>
+          <span>Motion <output id="speed-output">0.35</output></span>
+          <input id="speed" type="range" min="0" max="1.5" step="0.01" value="0.35" />
+        </label>
+        <label>
+          <span>Grain <output id="grain-output">0.08</output></span>
+          <input id="grain" type="range" min="0" max="0.3" step="0.01" value="0.08" />
+        </label>
+
+        <div class="actions">
+          <button id="pause" type="button">Pause motion</button>
+          <button id="download" class="primary" type="button">Download poster</button>
+        </div>
+        <p class="note">Exports as a 1080 × 1350 PNG, ready for Instagram.</p>
+      </aside>
+    </div>
+  </main>
+
+  <script>
+    const canvas = document.querySelector<HTMLCanvasElement>("#shader-canvas");
+    const maker = document.querySelector<HTMLElement>(".maker");
+    const gl = canvas?.getContext("webgl", { preserveDrawingBuffer: true });
+
+    const vertexSource = `
+      attribute vec2 a_position;
+      void main() { gl_Position = vec4(a_position, 0.0, 1.0); }
+    `;
+    const fragmentSource = `
+      precision highp float;
+      uniform vec2 u_resolution;
+      uniform float u_time;
+      uniform float u_scale;
+      uniform float u_warp;
+      uniform float u_grain;
+      uniform int u_mode;
+      uniform vec3 u_colorA;
+      uniform vec3 u_colorB;
+      uniform vec3 u_colorC;
+
+      float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+      float noise(vec2 p) {
+        vec2 i = floor(p), f = fract(p);
+        f = f * f * (3.0 - 2.0 * f);
+        return mix(mix(hash(i), hash(i + vec2(1., 0.)), f.x),
+                   mix(hash(i + vec2(0., 1.)), hash(i + vec2(1.)), f.x), f.y);
+      }
+      float fbm(vec2 p) {
+        float v = 0.0, a = 0.5;
+        for (int i = 0; i < 5; i++) { v += a * noise(p); p = p * 2.03 + 9.7; a *= 0.5; }
+        return v;
+      }
+      void main() {
+        vec2 uv = gl_FragCoord.xy / u_resolution.xy;
+        vec2 p = (uv - 0.5) * vec2(u_resolution.x / u_resolution.y, 1.0) * u_scale;
+        float t = u_time;
+        float v;
+        if (u_mode == 0) {
+          vec2 q = vec2(fbm(p + t * 0.18), fbm(p + vec2(4.2, 1.7) - t * 0.13));
+          v = fbm(p + u_warp * 3.0 * q);
+        } else if (u_mode == 1) {
+          v = 0.5 + 0.5 * sin((p.x + sin(p.y * 1.7 + t) * u_warp) * 5.0 + t * 2.0);
+          v = mix(v, fbm(p * 1.5 + t * .15), .3);
+        } else if (u_mode == 2) {
+          float r = length(p + vec2(sin(t) * .2, cos(t * .7) * .2));
+          v = 0.5 + 0.5 * sin(r * (10.0 + u_warp * 8.0) - t * 4.0 + fbm(p) * 4.0);
+        } else {
+          p += vec2(sin(p.y * 2.0 + t), cos(p.x * 2.0 - t)) * u_warp;
+          v = smoothstep(.15, .85, sin(p.x * 4.0) * sin(p.y * 4.0) * .5 + .5);
+        }
+        vec3 color = mix(u_colorA, u_colorB, smoothstep(.05, .65, v));
+        color = mix(color, u_colorC, smoothstep(.62, 1.0, v));
+        color += (hash(gl_FragCoord.xy + t) - .5) * u_grain;
+        gl_FragColor = vec4(color, 1.0);
+      }
+    `;
+
+    function compile(type: number, source: string) {
+      if (!gl) return null;
+      const shader = gl.createShader(type);
+      if (!shader) return null;
+      gl.shaderSource(shader, source);
+      gl.compileShader(shader);
+      return shader;
+    }
+
+    const program = gl?.createProgram();
+    const vertex = gl && compile(gl.VERTEX_SHADER, vertexSource);
+    const fragment = gl && compile(gl.FRAGMENT_SHADER, fragmentSource);
+    if (gl && program && vertex && fragment) {
+      gl.attachShader(program, vertex);
+      gl.attachShader(program, fragment);
+      gl.linkProgram(program);
+      gl.useProgram(program);
+      const buffer = gl.createBuffer();
+      gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+      gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1, 1,-1, -1,1, -1,1, 1,-1, 1,1]), gl.STATIC_DRAW);
+      const position = gl.getAttribLocation(program, "a_position");
+      gl.enableVertexAttribArray(position);
+      gl.vertexAttribPointer(position, 2, gl.FLOAT, false, 0, 0);
+    }
+
+    const getInput = (id: string) => document.querySelector<HTMLInputElement>(`#${id}`)!;
+    const mode = document.querySelector<HTMLSelectElement>("#shader-mode")!;
+    const scale = getInput("scale");
+    const warp = getInput("warp");
+    const speed = getInput("speed");
+    const grain = getInput("grain");
+    const colorA = getInput("color-a");
+    const colorB = getInput("color-b");
+    const colorC = getInput("color-c");
+    let paused = false;
+    let heldTime = 0;
+    let lastNow = performance.now();
+
+    const hex = (value: string) => [1, 3, 5].map((start) => parseInt(value.slice(start, start + 2), 16) / 255);
+    const uniform = (name: string) => gl && program ? gl.getUniformLocation(program, name) : null;
+    const uniforms = {
+      resolution: uniform("u_resolution"), time: uniform("u_time"), scale: uniform("u_scale"),
+      warp: uniform("u_warp"), grain: uniform("u_grain"), mode: uniform("u_mode"),
+      colorA: uniform("u_colorA"), colorB: uniform("u_colorB"), colorC: uniform("u_colorC"),
+    };
+
+    function render(now: number) {
+      if (!gl || !program || !canvas) return;
+      if (!paused) heldTime += (now - lastNow) / 1000 * Number(speed.value);
+      lastNow = now;
+      gl.viewport(0, 0, canvas.width, canvas.height);
+      gl.uniform2f(uniforms.resolution, canvas.width, canvas.height);
+      gl.uniform1f(uniforms.time, heldTime);
+      gl.uniform1f(uniforms.scale, Number(scale.value));
+      gl.uniform1f(uniforms.warp, Number(warp.value));
+      gl.uniform1f(uniforms.grain, Number(grain.value));
+      gl.uniform1i(uniforms.mode, Number(mode.value));
+      gl.uniform3fv(uniforms.colorA, hex(colorA.value));
+      gl.uniform3fv(uniforms.colorB, hex(colorB.value));
+      gl.uniform3fv(uniforms.colorC, hex(colorC.value));
+      gl.drawArrays(gl.TRIANGLES, 0, 6);
+      requestAnimationFrame(render);
+    }
+    requestAnimationFrame(render);
+
+    for (const input of [scale, warp, speed, grain]) {
+      const output = document.querySelector<HTMLOutputElement>(`#${input.id}-output`);
+      input.addEventListener("input", () => { if (output) output.value = input.value; });
+    }
+
+    const palettes = [
+      ["#ff3b30", "#6b4eff", "#00e5a8"], ["#ff006e", "#ffbe0b", "#3a86ff"],
+      ["#00f5d4", "#0057ff", "#9b5de5"], ["#ff4d00", "#101010", "#f5f5f5"],
+    ];
+    document.querySelector("#randomize")?.addEventListener("click", () => {
+      mode.value = String(Math.floor(Math.random() * 4));
+      const palette = palettes[Math.floor(Math.random() * palettes.length)];
+      [colorA.value, colorB.value, colorC.value] = palette;
+      scale.value = (1.5 + Math.random() * 6).toFixed(1);
+      warp.value = (Math.random() * 1.4).toFixed(2);
+      grain.value = (Math.random() * .18).toFixed(2);
+      for (const input of [scale, warp, grain]) input.dispatchEvent(new Event("input"));
+    });
+
+    const pauseButton = document.querySelector<HTMLButtonElement>("#pause");
+    pauseButton?.addEventListener("click", () => {
+      paused = !paused;
+      pauseButton.textContent = paused ? "Resume motion" : "Pause motion";
+    });
+
+    function wrapText(ctx: CanvasRenderingContext2D, text: string, x: number, y: number, maxWidth: number, lineHeight: number) {
+      const words = text.split(" ");
+      let line = "";
+      for (const word of words) {
+        const test = `${line}${word} `;
+        if (ctx.measureText(test).width > maxWidth && line) { ctx.fillText(line.trim(), x, y); line = `${word} `; y += lineHeight; }
+        else line = test;
+      }
+      ctx.fillText(line.trim(), x, y);
+    }
+
+    document.querySelector("#download")?.addEventListener("click", async () => {
+      if (!canvas || !maker) return;
+      await document.fonts.load("220px Tanker");
+      await document.fonts.load("700 54px Karla");
+      const output = document.createElement("canvas");
+      output.width = 1080; output.height = 1350;
+      const ctx = output.getContext("2d");
+      if (!ctx) return;
+      ctx.drawImage(canvas, 0, 0);
+      ctx.fillStyle = "white";
+      ctx.font = "220px Tanker";
+      ctx.fillText("CCNYC", 72, 235);
+      ctx.font = "700 54px Karla";
+      ctx.fillText(maker.dataset.date || "", 76, 1010);
+      ctx.font = "700 46px Karla";
+      wrapText(ctx, maker.dataset.location || "", 76, 1085, 780, 58);
+      ctx.font = "96px Tanker";
+      ctx.textAlign = "right";
+      ctx.fillText(maker.dataset.time || "6–8 PM", 1004, 1260);
+      const link = document.createElement("a");
+      link.download = "ccnyc-poster.png";
+      link.href = output.toDataURL("image/png");
+      link.click();
+    });
+  </script>
+
+  <style>
+    .maker { width: min(1280px, calc(100% - 40px)); margin: 0 auto; padding: 40px 0 72px; box-sizing: border-box; }
+    .makerHeader { display: flex; align-items: end; justify-content: space-between; gap: 20px; margin-bottom: 36px; }
+    .brand { color: white; font-family: "Tanker", monospace; font-size: 4.5rem; line-height: .8; text-decoration: none; }
+    .makerHeader p { margin: 10px 0 0; color: var(--theme-gray); text-transform: uppercase; letter-spacing: .12em; }
+    .workspace { display: grid; grid-template-columns: minmax(340px, 560px) minmax(300px, 1fr); gap: clamp(36px, 7vw, 96px); align-items: start; }
+    .posterWrap { position: sticky; top: 24px; }
+    .poster { position: relative; overflow: hidden; width: 100%; aspect-ratio: 4 / 5; background: #ff3b30; box-shadow: 0 28px 80px rgb(0 0 0 / .35); }
+    #shader-canvas { display: block; width: 100%; height: 100%; }
+    .posterCopy { position: absolute; inset: 0; display: flex; justify-content: space-between; flex-direction: column; padding: 7%; box-sizing: border-box; color: white; pointer-events: none; text-shadow: 0 2px 24px rgb(0 0 0 / .25); }
+    .posterCopy h1 { margin: 0; font-family: "Tanker", monospace; font-size: clamp(6rem, 14vw, 10rem); font-weight: normal; line-height: .8; }
+    .eventCopy p { max-width: 82%; margin: 0 0 8px; font-size: clamp(1rem, 2.2vw, 1.55rem); font-weight: 700; line-height: 1.05; }
+    .eventCopy .posterTime { max-width: none; margin: 22px 0 0; font-family: "Tanker", monospace; font-size: clamp(3.5rem, 7vw, 5.5rem); font-weight: normal; text-align: right; }
+    .controls { padding-top: 16px; }
+    .controlHeading { display: flex; justify-content: space-between; gap: 20px; align-items: end; margin-bottom: 38px; }
+    .eyebrow { margin: 0 0 8px; color: #ff3b30; font-size: .75rem; letter-spacing: .14em; text-transform: uppercase; }
+    h2 { margin: 0; font-family: "Tanker", monospace; font-size: clamp(2.5rem, 6vw, 4.5rem); font-weight: normal; line-height: .9; }
+    label { display: block; margin-bottom: 26px; }
+    label > span { display: flex; justify-content: space-between; margin-bottom: 9px; color: var(--theme-gray); font-size: .8rem; letter-spacing: .08em; text-transform: uppercase; }
+    select, button { min-height: 46px; border: 1px solid var(--theme-gray); border-radius: 0; font: inherit; }
+    select { width: 100%; padding: 0 12px; background: var(--background-color); color: white; }
+    input[type="range"] { width: 100%; accent-color: #ff3b30; }
+    input[type="color"] { width: 100%; height: 52px; padding: 3px; border: 1px solid var(--theme-gray); background: transparent; cursor: pointer; }
+    .colorGrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+    .iconButton, .actions button { padding: 0 16px; background: transparent; color: white; cursor: pointer; }
+    .actions { display: grid; grid-template-columns: 1fr 1.3fr; gap: 10px; margin-top: 36px; }
+    .actions .primary { border-color: #ff3b30; background: #ff3b30; font-weight: bold; }
+    .note { color: var(--theme-gray); font-size: .8rem; }
+    button:focus-visible, select:focus-visible, input:focus-visible, a:focus-visible { outline: 2px solid white; outline-offset: 3px; }
+    @media (max-width: 820px) {
+      .workspace { grid-template-columns: 1fr; }
+      .posterWrap { position: static; width: min(100%, 560px); margin: 0 auto; }
+      .controls { width: min(100%, 560px); margin: 0 auto; }
+    }
+    @media (max-width: 480px) {
+      .maker { width: min(100% - 24px, 1280px); padding-top: 24px; }
+      .makerHeader { align-items: start; flex-direction: column; }
+      .brand { font-size: 3.8rem; }
+      .colorGrid { gap: 7px; }
+      .actions { grid-template-columns: 1fr; }
+    }
+  </style>
+</Layout>
