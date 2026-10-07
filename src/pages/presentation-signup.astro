@@ -48,7 +48,6 @@ const signupEndpoint =
       </section>
 
       <section class="demoSection" id="demo-signup" aria-labelledby="demo-heading">
-      <p class="eyebrow">Share your work</p>
       <h2 class="demoHeading" id="demo-heading">Demo signup</h2>
       <p class="intro">
         Each demo is approximately 3 minutes and will be filmed. Sign up to
@@ -219,8 +218,8 @@ const signupEndpoint =
     .intro { max-width: 610px; margin: 22px 0 8px; font-size: 1.15rem; line-height: 1.5; }
     .resetNote { margin: 0; color: var(--theme-gray); }
     :global(html) { scroll-behavior: smooth; }
-    .contentGrid { display: grid; gap: 96px; }
-    .agendaSection { display: grid; grid-template-columns: minmax(0, 1fr) auto; column-gap: 72px; min-height: 560px; }
+    .contentGrid { display: grid; gap: 56px; }
+    .agendaSection { display: grid; grid-template-columns: minmax(0, 1fr) auto; column-gap: 72px; }
     .agendaSection header, .agenda { grid-column: 1; }
     .agenda { margin: 48px 0 0; padding: 0; list-style: none; border-top: 1px solid var(--theme-gray); }
     .agenda li { display: grid; grid-template-columns: 120px 1fr; gap: 24px; padding: 22px 4px; border-bottom: 1px solid rgb(65, 65, 65); }
@@ -229,7 +228,7 @@ const signupEndpoint =
     .agenda span { margin-top: 5px; color: var(--theme-gray); line-height: 1.4; }
     .qrPrompt { display: flex; grid-column: 2; grid-row: 1 / span 2; align-self: center; align-items: center; width: max-content; padding: 12px 26px 12px 12px; background: white; color: var(--background-color); font-size: 1.15rem; font-weight: bold; gap: 24px; letter-spacing: .06em; line-height: 1.15; text-decoration: none; text-transform: uppercase; }
     .qrPrompt img { display: block; width: 150px; height: 150px; }
-    .demoSection { scroll-margin-top: 40px; padding-top: 72px; border-top: 1px solid rgb(65, 65, 65); }
+    .demoSection { scroll-margin-top: 40px; }
     .demoHeading { margin: 0; font-family: "Tanker", monospace; font-size: clamp(2.5rem, 8vw, 4rem); font-weight: normal; line-height: 1; }
     .signupForm { margin: 40px 0 18px; }
     .fields { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 12px; }
@@ -258,8 +257,8 @@ const signupEndpoint =
     @media (max-width: 900px) {
       .signupPage { width: min(680px, calc(100% - 40px)); }
       .meetingDate { position: static; margin: -38px 0 52px; }
-      .contentGrid { gap: 72px; }
-      .agendaSection { grid-template-columns: 1fr; min-height: 0; }
+      .contentGrid { gap: 56px; }
+      .agendaSection { grid-template-columns: 1fr; }
       .qrPrompt { grid-column: 1; grid-row: auto; margin: 56px auto 0; }
     }
     @media (max-width: 520px) {
