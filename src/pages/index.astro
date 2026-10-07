@@ -125,15 +125,15 @@ const events = sheetRowsToEvents(
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 28px;
-      min-width: min(420px, calc(100vw - 40px));
-      margin-top: 30px;
-      padding: 18px 22px;
+      gap: 40px;
+      min-width: min(560px, calc(100vw - 32px));
+      margin-top: 34px;
+      padding: 26px 30px;
       box-sizing: border-box;
-      border: 2px solid white;
-      background: white;
-      color: var(--background-color);
-      font-size: 1rem;
+      border: 3px solid #ff3b30;
+      background: #ff3b30;
+      color: white;
+      font-size: clamp(1.1rem, 3vw, 1.4rem);
       font-weight: bold;
       letter-spacing: 0.04em;
       text-decoration: none;
@@ -142,8 +142,8 @@ const events = sheetRowsToEvents(
     }
 
     .signupButton:hover {
-      background: var(--background-color);
-      color: white;
+      background: white;
+      color: #d51f16;
     }
 
     .signupButton:focus-visible {
