@@ -11,7 +11,7 @@ Copy `.env.example` to `.env` and fill in the values used by the site.
 
 ## Presentation signup setup
 
-The `/presentation-signup` page uses a Google Sheet as a lightweight shared
+The `/meeting-agenda` page uses a Google Sheet as a lightweight shared
 store. It keeps up to 10 names and optional Instagram handles for each Tuesday
 meetup. The current list remains visible through Monday and automatically
 resets when the following Tuesday begins; older rows remain in the sheet as
