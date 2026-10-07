@@ -3,7 +3,7 @@ import Layout from "../layouts/Layout.astro";
 
 const signupEndpoint =
   import.meta.env.PUBLIC_PRESENTATION_SIGNUP_URL ??
-  "https://script.google.com/macros/s/AKfycbw6w4MBmMNpoyrF03s82wi9ZuRg__5lBwJp8NYbUBJ1NKEAmvTKJDqjRxDTbcfqptna/exec";
+  "https://script.google.com/macros/s/AKfycbx2eBlA1Xt_zF3w4r2FzZJ6faH5f0d7MnpYE4PPH64zThko_eYMhH7VGPkAXZokMeO1/exec";
 ---
 
 <Layout>
@@ -11,31 +11,56 @@ const signupEndpoint =
     <a class="backLink" href="/">← CCNYC</a>
 
     <header>
-      <p class="eyebrow">Show & tell</p>
-      <h1>Presentation signup</h1>
-      <p class="intro">
-        Presentations are ~3 minutes long. Sign up below to share something
-        you’ve made, learned, or are curious about.
-      </p>
-      <p class="resetNote">Ten spots are available. The list resets each day.</p>
+      <p class="eyebrow">Every Tuesday · 6–8 PM</p>
+      <h1>Meeting agenda</h1>
     </header>
 
-    <form class="signupForm" id="signup-form">
-      <label for="presenter-name">Your name</label>
-      <div class="formRow">
-        <input id="presenter-name" name="name" type="text" maxlength="60"
-          autocomplete="name" placeholder="Enter your name" required />
+    <ol class="agenda" aria-label="Tuesday meeting agenda">
+      <li>
+        <time>6:00–7:15</time>
+        <div><strong>Chill, code, collaborate</strong><span>Settle in, make something, and meet people.</span></div>
+      </li>
+      <li>
+        <time>7:15–7:25</time>
+        <div><strong>Announcements</strong><span>Community news, events, and opportunities.</span></div>
+      </li>
+      <li>
+        <time>7:25–8:00</time>
+        <div><strong>Demos</strong><span>Members share what they’ve been working on.</span></div>
+      </li>
+    </ol>
+
+    <section class="demoSection" aria-labelledby="demo-heading">
+      <p class="eyebrow">Share your work</p>
+      <h2 class="demoHeading" id="demo-heading">Demo signup</h2>
+      <p class="intro">
+        Each demo is approximately 3 minutes and will be filmed. Sign up to
+        share something you’ve made, learned, or are curious about.
+      </p>
+      <p class="resetNote">Ten spots are available. The list resets each Tuesday.</p>
+
+      <form class="signupForm" id="signup-form">
+        <div class="fields">
+          <label>
+            <span>Your name</span>
+            <input id="presenter-name" name="name" type="text" maxlength="60"
+              autocomplete="name" placeholder="Enter your name" required />
+          </label>
+          <label>
+            <span>Instagram handle <small>optional</small></span>
+            <input id="instagram-handle" name="instagram" type="text" maxlength="30"
+              autocomplete="off" placeholder="@yourhandle" />
+          </label>
+        </div>
         <button type="submit">Claim a spot</button>
-      </div>
-    </form>
+      </form>
 
-    <p class="status" id="signup-status" role="status" aria-live="polite">
-      Loading today’s signups…
-    </p>
+      <p class="status" id="signup-status" role="status" aria-live="polite">
+        Loading demo signups…
+      </p>
 
-    <section aria-labelledby="today-heading">
       <div class="listHeading">
-        <h2 id="today-heading">Today’s presenters</h2>
+        <h3 id="meeting-heading">Tuesday’s demos</h3>
         <span id="spot-count">0 / 10</span>
       </div>
       <ol class="signupList" id="signup-list"></ol>
@@ -46,10 +71,12 @@ const signupEndpoint =
     const page = document.querySelector<HTMLElement>(".signupPage");
     const form = document.querySelector<HTMLFormElement>("#signup-form");
     const input = document.querySelector<HTMLInputElement>("#presenter-name");
+    const instagramInput = document.querySelector<HTMLInputElement>("#instagram-handle");
     const button = form?.querySelector<HTMLButtonElement>("button");
     const list = document.querySelector<HTMLOListElement>("#signup-list");
     const status = document.querySelector<HTMLElement>("#signup-status");
     const count = document.querySelector<HTMLElement>("#spot-count");
+    const meetingHeading = document.querySelector<HTMLElement>("#meeting-heading");
     const endpoint = page?.dataset.signupEndpoint ?? "";
     const capacity = 10;
 
@@ -59,21 +86,49 @@ const signupEndpoint =
       status.classList.toggle("error", isError);
     }
 
-    function render(names: string[]) {
-      if (!list || !count || !button || !input) return;
+    type Presenter = { name: string; instagram?: string };
+
+    function render(presenters: Presenter[]) {
+      if (!list || !count || !button || !input || !instagramInput) return;
       list.replaceChildren();
       for (let index = 0; index < capacity; index += 1) {
         const item = document.createElement("li");
-        const name = names[index];
-        item.textContent = name || "Available";
-        item.classList.toggle("available", !name);
+        const presenter = presenters[index];
+        if (presenter) {
+          const name = document.createElement("span");
+          name.textContent = presenter.name;
+          item.append(name);
+          if (presenter.instagram) {
+            const handle = document.createElement("span");
+            handle.className = "instagram";
+            handle.textContent = `@${presenter.instagram.replace(/^@/, "")}`;
+            item.append(handle);
+          }
+        } else {
+          item.textContent = "Available";
+          item.classList.add("available");
+        }
         list.append(item);
       }
-      count.textContent = `${names.length} / ${capacity}`;
-      const isFull = names.length >= capacity;
+      count.textContent = `${presenters.length} / ${capacity}`;
+      const isFull = presenters.length >= capacity;
       button.disabled = isFull;
       input.disabled = isFull;
-      if (isFull) setStatus("Today’s presentation list is full.");
+      instagramInput.disabled = isFull;
+      if (isFull) setStatus("This meeting’s demo list is full.");
+    }
+
+    function presentersFrom(data: { presenters?: Presenter[]; names?: string[] }) {
+      if (Array.isArray(data.presenters)) return data.presenters;
+      return Array.isArray(data.names) ? data.names.map((name) => ({ name })) : [];
+    }
+
+    function showMeetingDate(date: string | undefined) {
+      if (!date || !meetingHeading) return;
+      const parsed = new Date(`${date}T12:00:00`);
+      meetingHeading.textContent = parsed.toLocaleDateString("en-US", {
+        weekday: "long", month: "long", day: "numeric",
+      });
     }
 
     async function loadSignups() {
@@ -87,9 +142,10 @@ const signupEndpoint =
         const response = await fetch(`${endpoint}?action=list&t=${Date.now()}`);
         const data = await response.json();
         if (!response.ok || !data.ok) throw new Error(data.error || "Could not load signups");
-        const names = Array.isArray(data.names) ? data.names : [];
-        render(names);
-        if (names.length < capacity) setStatus("Choose an available spot by entering your name.");
+        const presenters = presentersFrom(data);
+        showMeetingDate(data.meetingDate || data.date);
+        render(presenters);
+        if (presenters.length < capacity) setStatus("Choose an available spot by entering your name.");
       } catch (error) {
         console.error(error);
         setStatus("Couldn’t load today’s signups. Please try again.", true);
@@ -99,16 +155,19 @@ const signupEndpoint =
     form?.addEventListener("submit", async (event) => {
       event.preventDefault();
       const name = input?.value.trim() ?? "";
-      if (!name || !button || !input) return;
+      const instagram = instagramInput?.value.trim().replace(/^@/, "") ?? "";
+      if (!name || !button || !input || !instagramInput) return;
       button.disabled = true;
       input.disabled = true;
+      instagramInput.disabled = true;
       setStatus("Saving your spot…");
       try {
-        const body = new URLSearchParams({ action: "signup", name });
+        const body = new URLSearchParams({ action: "signup", name, instagram });
         const response = await fetch(endpoint, { method: "POST", body });
         const data = await response.json();
         if (!response.ok || !data.ok) throw new Error(data.error || "Could not save signup");
-        render(data.names);
+        showMeetingDate(data.meetingDate || data.date);
+        render(presentersFrom(data));
         form.reset();
         setStatus(`You’re signed up, ${name}!`);
       } catch (error) {
@@ -116,6 +175,7 @@ const signupEndpoint =
         setStatus(error instanceof Error ? error.message : "Couldn’t save your spot. Please try again.", true);
         button.disabled = false;
         input.disabled = false;
+        instagramInput.disabled = false;
       }
     });
 
@@ -127,29 +187,40 @@ const signupEndpoint =
     .backLink { display: inline-block; margin-bottom: 64px; text-decoration: none; }
     .eyebrow { margin: 0 0 10px; color: var(--theme-gray); font-size: .8rem; letter-spacing: .14em; text-transform: uppercase; }
     h1 { margin: 0; font-family: "Tanker", monospace; font-size: clamp(3rem, 10vw, 5.5rem); font-weight: normal; line-height: .95; }
-    .intro { max-width: 610px; margin: 28px 0 8px; font-size: 1.2rem; line-height: 1.5; }
+    .intro { max-width: 610px; margin: 22px 0 8px; font-size: 1.15rem; line-height: 1.5; }
     .resetNote { margin: 0; color: var(--theme-gray); }
-    .signupForm { margin: 48px 0 18px; }
-    label { display: block; margin-bottom: 8px; }
-    .formRow { display: flex; gap: 10px; }
+    .agenda { margin: 48px 0 72px; padding: 0; list-style: none; border-top: 1px solid var(--theme-gray); }
+    .agenda li { display: grid; grid-template-columns: 120px 1fr; gap: 24px; padding: 22px 4px; border-bottom: 1px solid rgb(65, 65, 65); }
+    .agenda time { color: #ff3b30; font-weight: bold; }
+    .agenda strong, .agenda span { display: block; }
+    .agenda span { margin-top: 5px; color: var(--theme-gray); line-height: 1.4; }
+    .demoSection { padding-top: 8px; }
+    .demoHeading { margin: 0; font-family: "Tanker", monospace; font-size: clamp(2.5rem, 8vw, 4rem); font-weight: normal; line-height: 1; }
+    .signupForm { margin: 40px 0 18px; }
+    .fields { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 12px; }
+    label, label span { display: block; }
+    label span { margin-bottom: 8px; }
+    label small { color: var(--theme-gray); font-size: .75em; font-weight: normal; }
     input, button { box-sizing: border-box; min-height: 48px; border: 1px solid var(--theme-gray); border-radius: 0; font: inherit; }
-    input { flex: 1; min-width: 0; padding: 0 14px; background: transparent; color: white; }
-    button { padding: 0 20px; background: white; color: var(--background-color); cursor: pointer; font-weight: bold; }
+    input { width: 100%; min-width: 0; padding: 0 14px; background: transparent; color: white; }
+    button { width: 100%; padding: 0 20px; background: #ff3b30; border-color: #ff3b30; color: white; cursor: pointer; font-weight: bold; }
     button:disabled, input:disabled { cursor: not-allowed; opacity: .55; }
     input:focus-visible, button:focus-visible, .backLink:focus-visible { outline: 2px solid white; outline-offset: 3px; }
     .status { min-height: 1.3em; margin: 0 0 42px; color: var(--theme-gray); }
     .status.error { color: #ff9e9e; }
     .listHeading { display: flex; align-items: baseline; justify-content: space-between; gap: 20px; border-bottom: 1px solid var(--theme-gray); }
-    h2 { margin: 0 0 12px; font-size: 1rem; font-weight: normal; letter-spacing: .08em; text-transform: uppercase; }
+    h3 { margin: 0 0 12px; font-size: 1rem; font-weight: normal; letter-spacing: .08em; text-transform: uppercase; }
     #spot-count { color: var(--theme-gray); }
     .signupList { margin: 0; padding: 0; list-style-position: inside; }
-    .signupList li { padding: 15px 4px; border-bottom: 1px solid rgb(65, 65, 65); }
+    .signupList li { display: flex; justify-content: space-between; gap: 18px; padding: 15px 4px; border-bottom: 1px solid rgb(65, 65, 65); }
     .signupList li::marker { color: var(--theme-gray); }
     .signupList .available { color: rgb(115, 115, 115); font-style: italic; }
+    .signupList .instagram { color: var(--theme-gray); }
     @media (max-width: 520px) {
       .signupPage { padding-top: 32px; }
       .backLink { margin-bottom: 48px; }
-      .formRow { flex-direction: column; }
+      .agenda li { grid-template-columns: 1fr; gap: 6px; }
+      .fields { grid-template-columns: 1fr; }
     }
   </style>
 </Layout>

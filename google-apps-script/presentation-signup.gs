@@ -12,32 +12,36 @@ function doPost(event) {
   }
 
   const name = String(event.parameter.name || "").trim();
+  const instagram = String(event.parameter.instagram || "").trim().replace(/^@/, "");
   if (!name) return jsonResponse_({ ok: false, error: "Please enter your name." });
   if (name.length > 60) return jsonResponse_({ ok: false, error: "Please use 60 characters or fewer." });
+  if (instagram && !/^[A-Za-z0-9._]{1,30}$/.test(instagram)) {
+    return jsonResponse_({ ok: false, error: "Please enter a valid Instagram handle." });
+  }
 
   const lock = LockService.getScriptLock();
   lock.waitLock(10000);
   try {
     const sheet = getSheet_();
-    const date = todayKey_();
-    const names = namesForDate_(sheet, date);
-    if (names.some((existing) => existing.toLowerCase() === name.toLowerCase())) {
-      return jsonResponse_({ ok: false, error: "That name is already signed up today." });
+    const meetingDate = currentMeetingTuesdayKey_();
+    const presenters = presentersForDate_(sheet, meetingDate);
+    if (presenters.some((presenter) => presenter.name.toLowerCase() === name.toLowerCase())) {
+      return jsonResponse_({ ok: false, error: "That name is already signed up for this Tuesday." });
     }
-    if (names.length >= CAPACITY) {
-      return jsonResponse_({ ok: false, error: "Today’s presentation list is full." });
+    if (presenters.length >= CAPACITY) {
+      return jsonResponse_({ ok: false, error: "This Tuesday’s demo list is full." });
     }
-    sheet.appendRow([date, name, new Date()]);
-    names.push(name);
-    return jsonResponse_({ ok: true, date, capacity: CAPACITY, names });
+    sheet.appendRow([meetingDate, name, instagram, new Date()]);
+    presenters.push({ name, instagram });
+    return jsonResponse_({ ok: true, meetingDate, capacity: CAPACITY, presenters });
   } finally {
     lock.releaseLock();
   }
 }
 
 function getToday_() {
-  const date = todayKey_();
-  return { ok: true, date, capacity: CAPACITY, names: namesForDate_(getSheet_(), date) };
+  const meetingDate = currentMeetingTuesdayKey_();
+  return { ok: true, meetingDate, capacity: CAPACITY, presenters: presentersForDate_(getSheet_(), meetingDate) };
 }
 
 function getSheet_() {
@@ -45,23 +49,31 @@ function getSheet_() {
   let sheet = spreadsheet.getSheetByName(SHEET_NAME);
   if (!sheet) {
     sheet = spreadsheet.insertSheet(SHEET_NAME);
-    sheet.appendRow(["Date", "Name", "Signed up at"]);
+    sheet.appendRow(["Meeting date", "Name", "Instagram", "Signed up at"]);
     sheet.setFrozenRows(1);
+  } else if (sheet.getRange(1, 3).getDisplayValue() === "Signed up at") {
+    sheet.insertColumnBefore(3);
+    sheet.getRange(1, 1, 1, 4).setValues([["Meeting date", "Name", "Instagram", "Signed up at"]]);
   }
   return sheet;
 }
 
-function namesForDate_(sheet, date) {
+function presentersForDate_(sheet, date) {
   const lastRow = sheet.getLastRow();
   if (lastRow < 2) return [];
-  return sheet.getRange(2, 1, lastRow - 1, 2).getDisplayValues()
+  return sheet.getRange(2, 1, lastRow - 1, 3).getDisplayValues()
     .filter((row) => row[0] === date && row[1])
-    .map((row) => row[1])
+    .map((row) => ({ name: row[1], instagram: row[2] }))
     .slice(0, CAPACITY);
 }
 
-function todayKey_() {
-  return Utilities.formatDate(new Date(), TIME_ZONE, "yyyy-MM-dd");
+function currentMeetingTuesdayKey_() {
+  const localDate = Utilities.formatDate(new Date(), TIME_ZONE, "yyyy-MM-dd");
+  const parts = localDate.split("-").map(Number);
+  const date = new Date(Date.UTC(parts[0], parts[1] - 1, parts[2]));
+  const daysSinceTuesday = (date.getUTCDay() - 2 + 7) % 7;
+  date.setUTCDate(date.getUTCDate() - daysSinceTuesday);
+  return Utilities.formatDate(date, "UTC", "yyyy-MM-dd");
 }
 
 function jsonResponse_(data) {

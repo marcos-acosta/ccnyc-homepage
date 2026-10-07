@@ -12,8 +12,10 @@ Copy `.env.example` to `.env` and fill in the values used by the site.
 ## Presentation signup setup
 
 The `/presentation-signup` page uses a Google Sheet as a lightweight shared
-store. It keeps up to 10 names per New York calendar day. A new day appears
-empty automatically; older rows remain in the sheet as history.
+store. It keeps up to 10 names and optional Instagram handles for each Tuesday
+meetup. The current list remains visible through Monday and automatically
+resets when the following Tuesday begins; older rows remain in the sheet as
+history.
 
 1. Create or open the Google Sheet that should hold the signups.
 2. In the sheet, open **Extensions → Apps Script**.
