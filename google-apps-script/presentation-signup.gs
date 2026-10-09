@@ -2,8 +2,9 @@ const SHEET_NAME = "Presentation Signups";
 const CAPACITY = 10;
 const TIME_ZONE = "America/New_York";
 
-function doGet() {
-  return jsonResponse_(getToday_());
+function doGet(event) {
+  const requestedDate = String((event && event.parameter && event.parameter.date) || "");
+  return jsonResponse_(getCurrentLineup_(requestedDate));
 }
 
 function doPost(event) {
@@ -39,8 +40,13 @@ function doPost(event) {
   }
 }
 
-function getToday_() {
+function getCurrentLineup_(requestedDate) {
   const meetingDate = currentMeetingTuesdayKey_();
+  // The public lineup only exposes the current signup cycle. On Tuesday this
+  // points at the new date immediately, so last week's names cannot carry over.
+  if (requestedDate && requestedDate !== meetingDate) {
+    return { ok: true, meetingDate, capacity: CAPACITY, presenters: [] };
+  }
   return { ok: true, meetingDate, capacity: CAPACITY, presenters: presentersForDate_(getSheet_(), meetingDate) };
 }
 

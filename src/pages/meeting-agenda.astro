@@ -136,6 +136,10 @@ const signupEndpoint =
       list.replaceChildren();
       for (let index = 0; index < capacity; index += 1) {
         const item = document.createElement("li");
+        const position = document.createElement("span");
+        position.className = "position";
+        position.textContent = `${index + 1}.`;
+        item.append(position);
         const presenter = presenters[index];
         if (presenter) {
           const name = document.createElement("span");
@@ -153,8 +157,10 @@ const signupEndpoint =
             item.append(handle);
           }
         } else {
-          item.textContent = "Available";
+          const available = document.createElement("span");
+          available.textContent = "Available";
           item.classList.add("available");
+          item.append(available);
         }
         list.append(item);
       }
@@ -232,11 +238,18 @@ const signupEndpoint =
         return;
       }
       try {
-        const response = await fetch(`${endpoint}?action=list&t=${Date.now()}`);
+        const requestedMeetingDate = currentMeetingTuesday();
+        const query = new URLSearchParams({
+          action: "list",
+          date: requestedMeetingDate,
+          t: String(Date.now()),
+        });
+        const response = await fetch(`${endpoint}?${query}`);
         const data = await response.json();
         if (!response.ok || !data.ok) throw new Error(data.error || "Could not load signups");
-        const presenters = presentersFrom(data);
-        showMeetingDate(data.meetingDate || data.date);
+        const responseMeetingDate = data.meetingDate || data.date;
+        const presenters = responseMeetingDate === requestedMeetingDate ? presentersFrom(data) : [];
+        showMeetingDate(requestedMeetingDate);
         render(presenters);
         if (presenters.length < capacity) setStatus("Choose an available spot by entering your name.");
       } catch (error) {
@@ -326,15 +339,17 @@ const signupEndpoint =
     input:focus-visible, button:focus-visible, .brandLink:focus-visible { outline: 2px solid white; outline-offset: 3px; }
     .status { min-height: 1.3em; margin: 0 0 42px; color: var(--theme-gray); }
     .status.error { color: #ff9e9e; }
-    .listHeading { display: flex; align-items: baseline; justify-content: space-between; gap: 20px; border-bottom: 1px solid var(--theme-gray); }
+    .listHeading { display: grid; grid-template-columns: 32px minmax(0, 1fr) minmax(120px, 35%); align-items: baseline; gap: 12px; }
+    .lineupTitle { grid-column: 1 / 3; }
+    .listHeading > h3 { text-align: right; }
     .lineupTitle { display: flex; align-items: baseline; gap: 12px; }
     h3 { margin: 0 0 12px; font-size: 1rem; font-weight: normal; letter-spacing: .08em; text-transform: uppercase; }
     #spot-count { color: var(--theme-gray); }
     .signupList { margin: 0; padding: 0; list-style-position: inside; }
-    .signupList li { display: flex; justify-content: space-between; gap: 18px; padding: 15px 4px; border-bottom: 1px solid rgb(65, 65, 65); }
-    .signupList li::marker { color: var(--theme-gray); }
-    .signupList .available { color: rgb(115, 115, 115); font-style: italic; }
-    .signupList .instagram { color: var(--theme-gray); text-align: right; }
+    .signupList :global(li) { display: grid; grid-template-columns: 32px minmax(0, 1fr) minmax(120px, 35%); gap: 12px; padding: 10px 0; }
+    .signupList :global(.position) { color: var(--theme-gray); font-style: normal; }
+    .signupList :global(.available) { color: rgb(115, 115, 115); font-style: italic; }
+    .signupList :global(.instagram) { grid-column: 3; color: var(--theme-gray); text-align: right; }
     @media (prefers-reduced-motion: reduce) {
       :global(html) { scroll-behavior: auto; }
     }

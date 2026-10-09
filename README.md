@@ -17,6 +17,10 @@ meetup. The current list remains visible through Monday and automatically
 resets when the following Tuesday begins; older rows remain in the sheet as
 history.
 
+The page explicitly requests the most recent Tuesday in New York time. On
+Tuesday, that means the new Tuesday's list starts empty and remains empty until
+someone signs up for that date.
+
 1. Create or open the Google Sheet that should hold the signups.
 2. In the sheet, open **Extensions → Apps Script**.
 3. Replace the editor contents with
